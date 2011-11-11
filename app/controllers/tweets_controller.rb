@@ -1,4 +1,5 @@
 class TweetsController < ApplicationController
+  before_filter :authenticate_user!, except: ['index', 'show']
   # GET /tweets
   # GET /tweets.json
   def index
@@ -34,13 +35,13 @@ class TweetsController < ApplicationController
 
   # GET /tweets/1/edit
   def edit
-    @tweet = Tweet.find(params[:id])
+    @tweet = current_user.tweets.find(params[:id])
   end
 
   # POST /tweets
   # POST /tweets.json
   def create
-    @tweet = Tweet.new(params[:tweet])
+    @tweet = current_user.tweets.new(params[:tweet])
 
     respond_to do |format|
       if @tweet.save
@@ -56,7 +57,7 @@ class TweetsController < ApplicationController
   # PUT /tweets/1
   # PUT /tweets/1.json
   def update
-    @tweet = Tweet.find(params[:id])
+    @tweet = current_user.tweets.find(params[:id])
 
     respond_to do |format|
       if @tweet.update_attributes(params[:tweet])
@@ -72,7 +73,7 @@ class TweetsController < ApplicationController
   # DELETE /tweets/1
   # DELETE /tweets/1.json
   def destroy
-    @tweet = Tweet.find(params[:id])
+    @tweet = current_user.tweets.find(params[:id])
     @tweet.destroy
 
     respond_to do |format|

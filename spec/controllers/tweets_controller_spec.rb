@@ -24,7 +24,12 @@ describe TweetsController do
   # Tweet. As you add validations to Tweet, be sure to
   # update the return value of this method accordingly.
   def valid_attributes
-    {}
+    {message: 'testing 1 2 3'}
+  end
+
+  def authenticate_user
+    @user ||= User.create(email: 'test@example.com',password: 'abc123')
+    sign_in @user
   end
 
   describe "GET index" do
@@ -44,7 +49,15 @@ describe TweetsController do
   end
 
   describe "GET new" do
+    describe "without user" do
+      it "redirects to login" do
+        post :create, :tweet => valid_attributes
+        response.should redirect_to(new_user_session_url)
+      end
+    end
+
     it "assigns a new tweet as @tweet" do
+      authenticate_user
       get :new
       assigns(:tweet).should be_a_new(Tweet)
     end
@@ -52,14 +65,26 @@ describe TweetsController do
 
   describe "GET edit" do
     it "assigns the requested tweet as @tweet" do
-      tweet = Tweet.create! valid_attributes
+      authenticate_user
+      tweet = @user.tweets.create! valid_attributes
       get :edit, :id => tweet.id
       assigns(:tweet).should eq(tweet)
     end
   end
 
   describe "POST create" do
+    describe "without user" do
+      it "redirects to login" do
+        post :create, :tweet => valid_attributes
+        response.should redirect_to(new_user_session_url)
+      end
+    end
+
     describe "with valid params" do
+      before(:each) do
+        authenticate_user
+      end
+
       it "creates a new Tweet" do
         expect {
           post :create, :tweet => valid_attributes
@@ -79,6 +104,10 @@ describe TweetsController do
     end
 
     describe "with invalid params" do
+      before(:each) do
+        authenticate_user
+      end
+
       it "assigns a newly created but unsaved tweet as @tweet" do
         # Trigger the behavior that occurs when invalid params are submitted
         Tweet.any_instance.stub(:save).and_return(false)
@@ -97,8 +126,12 @@ describe TweetsController do
 
   describe "PUT update" do
     describe "with valid params" do
+      before(:each) do
+        authenticate_user
+      end
+
       it "updates the requested tweet" do
-        tweet = Tweet.create! valid_attributes
+        tweet = @user.tweets.create! valid_attributes
         # Assuming there are no other tweets in the database, this
         # specifies that the Tweet created on the previous line
         # receives the :update_attributes message with whatever params are
@@ -108,21 +141,25 @@ describe TweetsController do
       end
 
       it "assigns the requested tweet as @tweet" do
-        tweet = Tweet.create! valid_attributes
+        tweet = @user.tweets.create! valid_attributes
         put :update, :id => tweet.id, :tweet => valid_attributes
         assigns(:tweet).should eq(tweet)
       end
 
       it "redirects to the tweet" do
-        tweet = Tweet.create! valid_attributes
+        tweet = @user.tweets.create! valid_attributes
         put :update, :id => tweet.id, :tweet => valid_attributes
         response.should redirect_to(tweet)
       end
     end
 
     describe "with invalid params" do
+      before(:each) do
+        authenticate_user
+      end
+
       it "assigns the tweet as @tweet" do
-        tweet = Tweet.create! valid_attributes
+        tweet = @user.tweets.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Tweet.any_instance.stub(:save).and_return(false)
         put :update, :id => tweet.id, :tweet => {}
@@ -130,7 +167,7 @@ describe TweetsController do
       end
 
       it "re-renders the 'edit' template" do
-        tweet = Tweet.create! valid_attributes
+        tweet = @user.tweets.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Tweet.any_instance.stub(:save).and_return(false)
         put :update, :id => tweet.id, :tweet => {}
@@ -140,15 +177,19 @@ describe TweetsController do
   end
 
   describe "DELETE destroy" do
+    before(:each) do
+      authenticate_user
+    end
+
     it "destroys the requested tweet" do
-      tweet = Tweet.create! valid_attributes
+      tweet = @user.tweets.create! valid_attributes
       expect {
         delete :destroy, :id => tweet.id
       }.to change(Tweet, :count).by(-1)
     end
 
     it "redirects to the tweets list" do
-      tweet = Tweet.create! valid_attributes
+      tweet = @user.tweets.create! valid_attributes
       delete :destroy, :id => tweet.id
       response.should redirect_to(tweets_url)
     end
