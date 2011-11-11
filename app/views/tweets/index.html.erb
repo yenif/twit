@@ -12,7 +12,7 @@
 <% @tweets.each do |tweet| %>
   <tr>
     <td><%= tweet.message %></td>
-    <td><%= tweet.user_id %></td>
+    <td><%= tweet.user.email %></td>
     <td><%= link_to 'Show', tweet %></td>
     <td><%= link_to 'Edit', edit_tweet_path(tweet) %></td>
     <td><%= link_to 'Destroy', tweet, confirm: 'Are you sure?', method: :delete %></td>
